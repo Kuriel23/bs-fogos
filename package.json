@@ -1,0 +1,14 @@
+{
+	"type": "module",
+	"name": "bs-fogos",
+	"author": {
+		"name": "KurielDev"
+	},
+	"dependencies": {
+		"@atproto/api": "^0.13.6",
+		"@skyware/bot": "^0.3.2",
+		"axios": "^1.7.7",
+		"dotenv": "^16.4.5",
+		"node-schedule": "^2.1.1"
+	}
+}
