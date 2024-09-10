@@ -20,6 +20,8 @@ function start() {
 			width: 1080,
 			height: 1080,
 		},
+		executablePath: "/usr/bin/chromium-browser",
+		args: ["--no-sandbox", "--disable-setuid-sandbox"],
 	}).then(async (browser) => {
 		const page = await browser.newPage();
 		await page.goto("https://panorama.sipam.gov.br/painel-do-fogo/");
