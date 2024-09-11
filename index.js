@@ -16,12 +16,21 @@ agent.login({
 function start() {
 	const selector = ".leaflet-top, .leaflet-bottom";
 	launch({
-		defaultViewport: {
-			width: 1080,
-			height: 1080,
-		},
-		executablePath: "/usr/bin/chromium-browser",
-		args: ["--no-sandbox", "--disable-setuid-sandbox"],
+		headless: false,
+		ignoreHTTPSErrors: true,
+		defaultViewport: null,
+		ignoreDefaultArgs: ["--enable-automation"],
+		args: [
+			"--disable-infobars",
+			"--no-sandbox",
+			"--disable-setuid-sandbox",
+			"--disable-gpu=False",
+			"--enable-webgl",
+			"--window-size=1080,1080",
+			"--start-maximized",
+		],
+		timeout: 10_000, // 10 seconds
+		protocolTimeout: 20_000,
 	}).then(async (browser) => {
 		const page = await browser.newPage();
 		await page.goto("https://panorama.sipam.gov.br/painel-do-fogo/");
