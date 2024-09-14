@@ -15,7 +15,6 @@ agent.login({
 });
 
 function start() {
-	const selector = ".leaflet-top, .leaflet-bottom";
 	launch({
 		headless: false,
 		ignoreHTTPSErrors: true,
@@ -34,33 +33,22 @@ function start() {
 		protocolTimeout: 20_000,
 	}).then(async (browser) => {
 		const page = await browser.newPage();
-		await page.goto("https://panorama.sipam.gov.br/painel-do-fogo/");
-		await page.locator(".leaflet-control-zoom-in").click();
-		await page.locator(".leaflet-control-zoom-in").click();
-		await page.locator(".leaflet-control-zoom-in").click();
+		await page.goto(
+			"https://www.iqair.com/air-quality-map?lat=-15.7877770246&lng=-53.0978311267&zoomLevel=5",
+		);
+		await page.locator(".map-dialog__toggle-wrapper").click();
 		await page.evaluate((sel) => {
 			const elements = document.querySelectorAll(sel);
 			// biome-ignore lint/complexity/noForEach: <explanation>
 			elements.forEach((el) => el.parentNode.removeChild(el));
-		}, `${selector}, .menu-item, #btnLegenda`);
+		}, ".bottom-left-block, .map-controls-wrapper, .top-right-block, .map-dialog__toggle-wrapper");
 		setTimeout(async () => {
-			const fileElement = await page.waitForSelector("main");
+			const fileElement = await page.waitForSelector("#mapDiv");
 			const fire = await fileElement.screenshot({
 				optimizeForSpeed: true,
 				type: "jpeg",
 			});
-			console.log("✅ [SCREENSHOT] • Foto das queimadas concluída");
-			await page.goto("https://aqicn.org/map/brazil/pt/");
-			await page.evaluate((sel) => {
-				const elements = document.querySelectorAll(sel);
-				// biome-ignore lint/complexity/noForEach: <explanation>
-				elements.forEach((el) => el.parentNode.removeChild(el));
-			}, selector);
-			const fileElementIQA = await page.waitForSelector("#map_canvas");
-			const iqa = await fileElementIQA.screenshot({
-				type: "jpeg",
-			});
-			console.log("✅ [SCREENSHOT] • Foto da qualidade do ar concluída");
+			console.log("✅ [SCREENSHOT] • Foto concluída");
 			await browser.close();
 			const formattedTime = new Date().toLocaleString("pt-BR", {
 				hour12: false,
@@ -91,16 +79,8 @@ function start() {
 						text: richText,
 						images: [
 							{
-								alt: "Incêndios / fogos ativos no Brasil no momento da publicação.",
+								alt: "Incêndios / fogos ativos e qualidade do ar no Brasil no momento da publicação.",
 								data: new Blob([fire], { type: "image/jpeg" }),
-								aspectRatio: {
-									width: 1080,
-									height: 1080,
-								},
-							},
-							{
-								alt: "Qualidade do ar no Brasil no momento da publicação.",
-								data: new Blob([iqa], { type: "image/jpeg" }),
 								aspectRatio: {
 									width: 1080,
 									height: 1080,
