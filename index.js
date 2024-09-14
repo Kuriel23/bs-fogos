@@ -3,6 +3,7 @@ import * as dotenv from "dotenv";
 import { scheduleJob } from "node-schedule";
 import * as process from "node:process";
 import { launch } from "puppeteer";
+import get from "superagent";
 
 dotenv.config();
 
@@ -70,35 +71,48 @@ function start() {
 				hour: "2-digit",
 				minute: "2-digit",
 			});
-			const richText = new RichText().text(
-				`[${process.env.status === "local" ? "ALPHA" : "BETA"}] - Informação das queimadas e da qualidade do ar em território brasileiro ás ${formattedTime}.`,
-			);
-			await agent
-				.post({
-					text: richText,
-					images: [
-						{
-							alt: "Incêndios / fogos ativos no Brasil no momento da publicação.",
-							data: new Blob([fire], { type: "image/jpeg" }),
-							aspectRatio: {
-								width: 1080,
-								height: 1080,
+			get(
+				`https://panorama.sipam.gov.br/painel-do-fogo/backend/classes/chart/get_eventos_painel_indicadores.php?estado=&codigo_pais=BRA&tipo_terra=&biomas=&cobertura=&data_ini=${new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split("T")[0]}&data_fim=${new Date().toISOString().split("T")[0]}`,
+			).end(async (err, res) => {
+				if (err) return;
+				const richText = new RichText().text(
+					`[${process.env.status === "local" ? "ALPHA" : "BETA"}] - Informação das queimadas e da qualidade do ar em território brasileiro ás ${formattedTime}.\n\nCertos destaques de incêndios:\n${res.body.dadosEstados
+						.sort((a, b) => {
+							b.quantidade - a.quantidade;
+						})
+						.slice(0, 5)
+						.map((data) => {
+							return `${data.sigla_uf} - ${data.quantidade} eventos`;
+						})
+						.join("\n")}`,
+				);
+				await agent
+					.post({
+						text: richText,
+						images: [
+							{
+								alt: "Incêndios / fogos ativos no Brasil no momento da publicação.",
+								data: new Blob([fire], { type: "image/jpeg" }),
+								aspectRatio: {
+									width: 1080,
+									height: 1080,
+								},
 							},
-						},
-						{
-							alt: "Qualidade do ar no Brasil no momento da publicação.",
-							data: new Blob([iqa], { type: "image/jpeg" }),
-							aspectRatio: {
-								width: 1080,
-								height: 1080,
+							{
+								alt: "Qualidade do ar no Brasil no momento da publicação.",
+								data: new Blob([iqa], { type: "image/jpeg" }),
+								aspectRatio: {
+									width: 1080,
+									height: 1080,
+								},
 							},
-						},
-					],
-				})
-				.then(async (post) => {
-					post.like();
-					console.log("✅ [BOT] • Post publicado");
-				});
+						],
+					})
+					.then(async (post) => {
+						post.like();
+						console.log("✅ [BOT] • Post publicado");
+					});
+			});
 		}, 5000);
 	});
 }
