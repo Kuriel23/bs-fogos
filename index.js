@@ -107,7 +107,7 @@ console.log("✅ [GATEWAY] • Iniciado");
 
 if (process.env.status === "local") start();
 else
-	scheduleJob("0 */1 * * *", async () => {
+	scheduleJob("0 */6 * * *", async () => {
 		console.log("❇️ [BOT] • Reproduzindo novo post");
 		start();
 	});
